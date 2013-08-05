@@ -11,6 +11,7 @@ include_recipe "vagrant_main::custom_php"
 # include_recipe "elasticsearch"
 include_recipe "ant"
 include_recipe "memcached"
+include_recipe "git"
 
 # Install mysql gem
 gem_package "mysql" do

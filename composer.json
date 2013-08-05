@@ -1,8 +1,8 @@
 {
+    "minimum-stability": "dev",
     "require": {
         "php": ">=5.3.3",
         "zendframework/zendframework": "2.2.2",
-        "zfb/zfb-vm": "dev-master",
         "doctrine/doctrine-orm-module": "0.8.*@dev"
     }
 }
