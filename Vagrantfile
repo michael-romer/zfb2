@@ -7,7 +7,7 @@ Vagrant.configure("2") do |config|
       config.ssh.timeout   = 300
       config.vm.synced_folder ".", "/vagrant", :id => "vagrant-root", :owner => "vagrant", :group => "www-data"
       config.vm.provision :chef_solo do |chef|
-         chef.cookbooks_path = "vendor/zfb/zfb-vm/cookbooks"
+         chef.cookbooks_path = "data/vm/cookbooks"
          chef.add_recipe("vagrant_main")
          chef.log_level = :debug
          # Configure http(s) proxy if needed (requires Vagrant >= 0.7.4)
