@@ -11,11 +11,24 @@ namespace Application\Controller;
 
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
+use Application\Initializer\EntityManagerAware;
 
-class IndexController extends AbstractActionController
+class IndexController extends AbstractActionController implements EntityManagerAware
 {
+    private $em;
+
     public function indexAction()
     {
         return new ViewModel();
+    }
+
+    public function getEm()
+    {
+        return $this->em;
+    }
+
+    public function setEm($em)
+    {
+        $this->em = $em;
     }
 }

@@ -75,6 +75,15 @@ return array(
         'invokables' => array(
             'Application\Controller\Index' => 'Application\Controller\IndexController'
         ),
+        'initializers' => array(
+            'em' => function ($instance, $serviceLocator) {
+                if ($instance instanceof \Application\Initializer\EntityManagerAware) {
+                    $instance->setEm(
+                        $serviceLocator->getServiceLocator()->get('doctrine.entitymanager.orm_default')
+                    );
+                }
+            },
+        )
     ),
     'view_manager' => array(
         'display_not_found_reason' => true,
@@ -99,4 +108,27 @@ return array(
             ),
         ),
     ),
+    'doctrine' => array(
+        'connection' => array(
+            'orm_default' => array(
+                'driverClass' => 'Doctrine\DBAL\Driver\PDOMySql\Driver',
+                'params' => array(
+                    'port'     => '3306',
+                    'charset'  => 'UTF8'
+                )
+            )
+        ),
+   		'driver' => array(
+   			'my_annotation_driver' => array(
+   				'class' => 'Doctrine\ORM\Mapping\Driver\AnnotationDriver',
+   				'cache' => 'array',
+   				'paths' => array(__DIR__ . '/../src/Application/Entity')
+   			),
+   			'orm_default' => array(
+                'drivers' => array(
+                    'Application\Entity' => 'my_annotation_driver'
+                )
+            )
+   		),
+   	)
 );
