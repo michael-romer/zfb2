@@ -10,3 +10,4 @@ composer.lock
 vendor/bin
 .idea
 .vagrant
+vendor
