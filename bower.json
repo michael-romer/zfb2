@@ -1,0 +1,14 @@
+{
+  "name": "my-project",
+  "version": "1.0.0",
+  "main": "public/css/style.css",
+  "directory": "public/bower_components",
+  "ignore": [
+    ".jshintrc",
+    "**/*.txt"
+  ],
+  "dependencies": {
+      "jquery": "latest",
+      "bootstrap": "latest"
+  }
+}

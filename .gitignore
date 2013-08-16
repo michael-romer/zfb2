@@ -1,3 +1,4 @@
+npm-debug.log
 nbproject
 ._*
 .~lock.*
@@ -11,3 +12,5 @@ vendor/bin
 .idea
 .vagrant
 vendor
+data/php_depend
+public/bower_components

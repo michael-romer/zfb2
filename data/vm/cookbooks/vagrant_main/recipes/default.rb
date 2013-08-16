@@ -12,6 +12,8 @@ include_recipe "vagrant_main::custom_php"
 include_recipe "ant"
 include_recipe "memcached"
 include_recipe "git"
+include_recipe "nodejs"
+include_recipe "nodejs::npm"
 
 # Install mysql gem
 gem_package "mysql" do
@@ -25,6 +27,7 @@ ruby_block "Create database + execute grants" do
     require 'mysql'
     m = Mysql.new("localhost", "root", "")
     m.query("CREATE DATABASE IF NOT EXISTS app CHARACTER SET utf8")
+    m.query("grant all on `app`.* to 'root'@'10.0.2.2' identified by ''")
     m.reload
   end
 end

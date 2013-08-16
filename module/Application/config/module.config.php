@@ -118,17 +118,20 @@ return array(
                 )
             )
         ),
-   		'driver' => array(
-   			'my_annotation_driver' => array(
-   				'class' => 'Doctrine\ORM\Mapping\Driver\AnnotationDriver',
-   				'cache' => 'array',
-   				'paths' => array(__DIR__ . '/../src/Application/Entity')
-   			),
-   			'orm_default' => array(
+        'driver' => array(
+            'my_annotation_driver' => array(
+                'class' => 'Doctrine\ORM\Mapping\Driver\AnnotationDriver',
+                'cache' => 'array',
+                'paths' => array(__DIR__ . '/../src/Application/Entity')
+            ),
+            'orm_default' => array(
                 'drivers' => array(
                     'Application\Entity' => 'my_annotation_driver'
                 )
             )
-   		),
-   	)
+        ),
+    ),
+    'data-fixture' => array(
+        'fixtures' => __DIR__ . '/../src/Application/Fixture',
+    ),
 );
