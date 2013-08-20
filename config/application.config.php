@@ -5,7 +5,8 @@ return array(
         'Application',
         'DoctrineModule',
         'DoctrineORMModule',
-        'DoctrineDataFixtureModule'
+        'DoctrineDataFixtureModule',
+        'ZFTool'
     ),
 
     // These are various options for the listeners attached to the ModuleManager

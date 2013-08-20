@@ -2,6 +2,7 @@
 namespace Application\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo as Gedmo;
 
 /**
  * @ORM\Entity
@@ -23,6 +24,12 @@ class User
 
     /** @ORM\Column(type="string") */
     protected $password;
+
+    /**
+     * @Gedmo\Mapping\Annotation\Timestampable(on="create")
+     * @Doctrine\ORM\Mapping\Column(type="datetime")
+     */
+    private $created;
 
     public function setEmail($email)
     {

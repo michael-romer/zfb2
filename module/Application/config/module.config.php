@@ -118,6 +118,14 @@ return array(
                 )
             )
         ),
+        'eventmanager' => array(
+            'orm_default' => array(
+                'subscribers' => array(
+                    // pick any listeners you need
+                    'Gedmo\Timestampable\TimestampableListener',
+                )
+            )
+        ),
         'driver' => array(
             'my_annotation_driver' => array(
                 'class' => 'Doctrine\ORM\Mapping\Driver\AnnotationDriver',
