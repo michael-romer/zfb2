@@ -138,6 +138,11 @@ return array(
                 )
             )
         ),
+        'migrations' => array(
+            'migrations_table' => 'migrations',
+            'migrations_namespace' => 'Application',
+            'migrations_directory' => 'data/migrations',
+        ),
     ),
     'data-fixture' => array(
         'fixtures' => __DIR__ . '/../src/Application/Fixture',

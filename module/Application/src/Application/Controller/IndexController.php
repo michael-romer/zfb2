@@ -19,6 +19,7 @@ class IndexController extends AbstractActionController implements EntityManagerA
 
     public function indexAction()
     {
+        // $result = $this->em->getRepository('Application\Entity\User')->myCustomFinder();
         return new ViewModel();
     }
 
