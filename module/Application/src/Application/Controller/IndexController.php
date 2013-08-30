@@ -13,6 +13,7 @@ use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use Application\Initializer\EntityManagerAware;
 use Application\Initializer\ElasticsearchAware;
+use Application\Entity\User;
 
 
 class IndexController extends AbstractActionController implements EntityManagerAware, ElasticsearchAware
@@ -22,8 +23,33 @@ class IndexController extends AbstractActionController implements EntityManagerA
 
     public function indexAction()
     {
-        // $result = $this->em->getRepository('Application\Entity\User')->myCustomFinder();
-        // $result = $this->es->getIndex('user')->getType('user')->search('*'));
+        /*
+         * Example: Use a custom finder
+         * $result = $this->em->getRepository('Application\Entity\User')->myCustomFinder();
+         */
+
+        /* Example: Add new user to Elasticsearch and search for it
+         * $type = $this->es->getIndex('user')->getType('user');
+         * $user = new User();
+         * $user->setId(1);
+         * $user->setUsername('testuser');
+         * $user->setEmail('testuser@example.com');
+         * $user->setPassword('test123');
+
+         * $doc = new \Elastica\Document(
+         *     $user->getId(),
+         *     array(
+         *         'id' => $user->getId(),
+         *         'username' => $user->getUsername(),
+         *         'email' => $user->getEmail()
+         *     )
+         * );
+         * $this->es->getIndex('user')->getType('user')->addDocument($doc);
+         * $this->es->getIndex('user')->refresh();
+         *
+         * $result = $this->es->getIndex('user')->getType('user')->search('*');
+         */
+
         return new ViewModel();
     }
 
@@ -46,5 +72,4 @@ class IndexController extends AbstractActionController implements EntityManagerA
     {
         return $this->es;
     }
-
 }
