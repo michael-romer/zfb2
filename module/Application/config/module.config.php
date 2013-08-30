@@ -83,6 +83,13 @@ return array(
                     );
                 }
             },
+            'es' => function ($instance, $serviceLocator) {
+                if ($instance instanceof \Application\Initializer\ElasticsearchAware) {
+                    $instance->setEs(
+                        $serviceLocator->getServiceLocator()->get('elasticsearch')
+                    );
+                }
+            },
         )
     ),
     'view_manager' => array(

@@ -1,121 +1,143 @@
-#
-# Cookbook Name:: elasticsearch
-# Recipe:: default
-#
-# Copyright 2010, GoTime
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-# 
-#     http://www.apache.org/licenses/LICENSE-2.0
-# 
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
+[Chef::Recipe, Chef::Resource].each { |l| l.send :include, ::Extensions }
 
-include_recipe "java"
+Erubis::Context.send(:include, Extensions::Templates)
 
-package "unzip" do
-  action :install
+elasticsearch = "elasticsearch-#{node.elasticsearch[:version]}"
+
+include_recipe "elasticsearch::curl"
+include_recipe "ark"
+
+# Create user and group
+#
+group node.elasticsearch[:user] do
+  action :create
 end
 
-remote_file "/tmp/elasticsearch-#{node[:elasticsearch][:version]}.zip" do
-  source "http://github.com/downloads/elasticsearch/elasticsearch/elasticsearch-#{node[:elasticsearch][:version]}.zip"
-  mode "0644"
-  checksum node[:elasticsearch][:checksum]
+user node.elasticsearch[:user] do
+  comment "ElasticSearch User"
+  home    "#{node.elasticsearch[:dir]}/elasticsearch"
+  shell   "/bin/bash"
+  gid     node.elasticsearch[:user]
+  supports :manage_home => false
+  action  :create
 end
 
-user "elasticsearch" do
-  uid 61021
-  gid "nogroup"
+# FIX: Work around the fact that Chef creates the directory even for `manage_home: false`
+bash "remove the elasticsearch user home" do
+  user    'root'
+  code    "rm -rf  #{node.elasticsearch[:dir]}/elasticsearch"
+
+  not_if  "test -L #{node.elasticsearch[:dir]}/elasticsearch"
+  only_if "test -d #{node.elasticsearch[:dir]}/elasticsearch"
 end
 
-["/usr/lib/elasticsearch-#{node[:elasticsearch][:version]}", "/etc/elasticsearch"].each do |dir|
-  directory dir do
-    owner "root"
-    group "root"
-    mode 0755
+# Create ES directories
+#
+[ node.elasticsearch[:path][:conf], node.elasticsearch[:path][:logs], node.elasticsearch[:pid_path] ].each do |path|
+  directory path do
+    owner node.elasticsearch[:user] and group node.elasticsearch[:user] and mode 0755
+    recursive true
+    action :create
   end
 end
 
-["/var/log/elasticsearch", "/var/lib/elasticsearch", "/var/run/elasticsearch"].each do |dir|
-  directory dir do
-    owner "elasticsearch"
-    group "nogroup"
-    mode 0755
+# Create data path directories
+#
+data_paths = node.elasticsearch[:path][:data].is_a?(Array) ? node.elasticsearch[:path][:data] : node.elasticsearch[:path][:data].split(',')
+
+data_paths.each do |path|
+  directory path.strip do
+    owner node.elasticsearch[:user] and group node.elasticsearch[:user] and mode 0755
+    recursive true
+    action :create
   end
 end
 
-bash "unzip elasticsearch" do
-  user "root"
-  cwd "/tmp"
-  code %(unzip /tmp/elasticsearch-#{node[:elasticsearch][:version]}.zip)
-  not_if { File.exists? "/tmp/elasticsearch-#{node[:elasticsearch][:version]}" }
+# Create service
+#
+template "/etc/init.d/elasticsearch" do
+  source "elasticsearch.init.erb"
+  owner 'root' and mode 0755
 end
 
-bash "copy elasticsearch root" do
-  user "root"
-  cwd "/tmp"
-  code %(cp -r /tmp/elasticsearch-#{node[:elasticsearch][:version]}/* /usr/lib/elasticsearch-#{node[:elasticsearch][:version]})
-  not_if { File.exists? "/usr/lib/elasticsearch-#{node[:elasticsearch][:version]}/lib" }
+service "elasticsearch" do
+  supports :status => true, :restart => true
+  action [ :enable ]
 end
 
-directory "/usr/lib/elasticsearch-#{node[:elasticsearch][:version]}/plugins" do
-  owner "root"
-  group "root"
-  mode 0755
-end
+# Download, extract, symlink the elasticsearch libraries and binaries
+#
+ark_prefix_root = node.elasticsearch[:dir] || node.ark[:prefix_root]
+ark_prefix_home = node.elasticsearch[:dir] || node.ark[:prefix_home]
 
-link "/usr/lib/elasticsearch" do
-  to "/usr/lib/elasticsearch-#{node[:elasticsearch][:version]}"
-end
+ark "elasticsearch" do
+  url   node.elasticsearch[:download_url]
+  owner node.elasticsearch[:user]
+  group node.elasticsearch[:user]
+  version node.elasticsearch[:version]
+  has_binaries ['bin/elasticsearch', 'bin/plugin']
+  checksum node.elasticsearch[:checksum]
+  prefix_root   ark_prefix_root
+  prefix_home   ark_prefix_home
 
-aws = nil
-if node[:ec2]
-  aws = data_bag_item('aws', 'main')
+  notifies :start,   'service[elasticsearch]'
+  notifies :restart, 'service[elasticsearch]'
 
-  directory "/mnt/elasticsearch" do
-    owner "elasticsearch"
-    group "nogroup"
-    mode 0755
-  end
+  not_if do
+    link   = "#{node.elasticsearch[:dir]}/elasticsearch"
+    target = "#{node.elasticsearch[:dir]}/elasticsearch-#{node.elasticsearch[:version]}"
 
-  # put lib dir on /mnt
-  mount "/var/lib/elasticsearch" do
-    device "/mnt/elasticsearch"
-    fstype "none"
-    options "bind,rw"
-    action :mount
+    ::File.directory?(link) && ::File.symlink?(link) && ::File.readlink(link) == target
   end
 end
 
-bash "copy elasticsearch conf" do
-  user "root"
-  cwd "/usr/lib/elasticsearch"
-  code %(cp -R ./config/* /etc/elasticsearch)
-  not_if { File.exists? "/etc/elasticsearch/logging.yml" }
+# Increase open file and memory limits
+#
+bash "enable user limits" do
+  user 'root'
+
+  code <<-END.gsub(/^    /, '')
+    echo 'session    required   pam_limits.so' >> /etc/pam.d/su
+  END
+
+  not_if { ::File.read("/etc/pam.d/su").match(/^session    required   pam_limits\.so/) }
 end
 
-template "/etc/elasticsearch/logging.yml" do
-  source "logging.yml.erb"
-  mode 0644
+log "increase limits for the elasticsearch user"
+
+file "/etc/security/limits.d/10-elasticsearch.conf" do
+  content <<-END.gsub(/^    /, '')
+    #{node.elasticsearch.fetch(:user, "elasticsearch")}     -    nofile    #{node.elasticsearch[:limits][:nofile]}
+    #{node.elasticsearch.fetch(:user, "elasticsearch")}     -    memlock   #{node.elasticsearch[:limits][:memlock]}
+  END
 end
 
-template "/etc/elasticsearch/elasticsearch.in.sh" do
-  source "elasticsearch.in.sh.erb"
-  mode 0644
+# Create file with ES environment variables
+#
+template "elasticsearch-env.sh" do
+  path   "#{node.elasticsearch[:path][:conf]}/elasticsearch-env.sh"
+  source "elasticsearch-env.sh.erb"
+  owner node.elasticsearch[:user] and group node.elasticsearch[:user] and mode 0755
+
+  notifies :restart, 'service[elasticsearch]'
 end
 
-template "/etc/elasticsearch/elasticsearch.yml" do
+# Create ES config file
+#
+template "elasticsearch.yml" do
+  path   "#{node.elasticsearch[:path][:conf]}/elasticsearch.yml"
   source "elasticsearch.yml.erb"
-  mode 0644
+  owner node.elasticsearch[:user] and group node.elasticsearch[:user] and mode 0755
+
+  notifies :restart, 'service[elasticsearch]'
 end
 
+# Create ES logging file
+#
+template "logging.yml" do
+  path   "#{node.elasticsearch[:path][:conf]}/logging.yml"
+  source "logging.yml.erb"
+  owner node.elasticsearch[:user] and group node.elasticsearch[:user] and mode 0755
 
-runit_service "elasticsearch" do
-  action [ :enable, :start ]
+  notifies :restart, 'service[elasticsearch]'
 end

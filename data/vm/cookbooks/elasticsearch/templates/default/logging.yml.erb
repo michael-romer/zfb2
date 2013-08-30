@@ -1,15 +1,19 @@
 rootLogger: INFO, console, file
-logger:
-  jgroups: WARN
-  # log action execution errors for easier debugging
-  action : INFO
+
+<% node.elasticsearch[:logging].sort.each do |key, value| %>
+logger.<%= key %>: <%= value %>
+<% end %>
+
+additivity:
+  index.search.slowlog: false
+  index.indexing.slowlog: false
 
 appender:
   console:
     type: console
     layout:
       type: consolePattern
-      conversionPattern: "[%d{ABSOLUTE}][%-5p][%-25c] %m%n"
+      conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %m%n"
 
   file:
     type: dailyRollingFile
@@ -17,5 +21,20 @@ appender:
     datePattern: "'.'yyyy-MM-dd"
     layout:
       type: pattern
-      conversionPattern: "[%d{ABSOLUTE}][%-5p][%-25c] %m%n"
-      
+      conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %m%n"
+
+  index_search_slow_log_file:
+    type: dailyRollingFile
+    file: ${path.logs}/${cluster.name}_index_search_slowlog.log
+    datePattern: "'.'yyyy-MM-dd"
+    layout:
+      type: pattern
+      conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %m%n"
+
+  index_indexing_slow_log_file:
+    type: dailyRollingFile
+    file: ${path.logs}/${cluster.name}_index_indexing_slowlog.log
+    datePattern: "'.'yyyy-MM-dd"
+    layout:
+      type: pattern
+      conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %m%n"

@@ -12,5 +12,24 @@
  */
 
 return array(
-    // ...
+    'doctrine' => array(
+        'connection' => array(
+            'orm_default' => array(
+                'params' => array(
+                    'host'     => 'localhost',
+                    'user'     => 'root',
+                    'password' => '',
+                    'dbname'   => 'app'
+                )
+            )
+        )
+    ),
+    'elasticsearch' => array(
+        'connection' => array(
+            'params' => array(
+                'host' => 'localhost',
+                'port' => '9200'
+            )
+        )
+    )
 );

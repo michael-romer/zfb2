@@ -12,14 +12,18 @@ namespace Application\Controller;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use Application\Initializer\EntityManagerAware;
+use Application\Initializer\ElasticsearchAware;
 
-class IndexController extends AbstractActionController implements EntityManagerAware
+
+class IndexController extends AbstractActionController implements EntityManagerAware, ElasticsearchAware
 {
     private $em;
+    private $es;
 
     public function indexAction()
     {
         // $result = $this->em->getRepository('Application\Entity\User')->myCustomFinder();
+        // $result = $this->es->getIndex('user')->getType('user')->search('*'));
         return new ViewModel();
     }
 
@@ -32,4 +36,15 @@ class IndexController extends AbstractActionController implements EntityManagerA
     {
         $this->em = $em;
     }
+
+    public function setEs($es)
+    {
+        $this->es = $es;
+    }
+
+    public function getEs()
+    {
+        return $this->es;
+    }
+
 }

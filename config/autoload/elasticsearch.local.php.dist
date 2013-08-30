@@ -1,0 +1,11 @@
+<?php
+return array(
+    'elasticsearch' => array(
+        'connection' => array(
+            'params' => array(
+                'host' => 'localhost',
+                'port' => '9200'
+            )
+        )
+    )
+);
