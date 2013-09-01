@@ -22,6 +22,13 @@ return array(
                     'dbname'   => 'app'
                 )
             )
+        ),
+        'configuration' => array(
+            'orm_default' => array(
+                'metadata_cache'    => 'array',
+                'query_cache'       => 'array',
+                'result_cache'      => 'array',
+            )
         )
     ),
     'elasticsearch' => array(

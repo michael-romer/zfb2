@@ -11,5 +11,16 @@ return array(
             );
             return $srv;
         },
+        'doctrine.cache.my_memcache' => function ($sm) {
+            $cache = new \Doctrine\Common\Cache\MemcacheCache();
+            $memcache = new \Memcache();
+            $config = $sm->get('config');
+            $memcache->connect(
+                $config['memcache']['host'],
+                $config['memcache']['port']
+            );
+            $cache->setMemcache($memcache);
+            return $cache;
+        }
     )
 );

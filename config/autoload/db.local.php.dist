@@ -10,6 +10,13 @@ return array(
                     'dbname'   => 'app'
                 )
             )
+        ),
+        'configuration' => array(
+            'orm_default' => array(
+                'metadata_cache'    => 'my_memcache',
+                'query_cache'       => 'my_memcache',
+                'result_cache'      => 'my_memcache',
+            )
         )
     ),
 );
