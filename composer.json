@@ -10,7 +10,7 @@
         "phploc/phploc": "*",
         "phpmd/phpmd": "dev-master",
         "sebastian/phpcpd": "2.0.*@dev",
-        "pdepend/pdepend" : "1.1.1",
+        "pdepend/pdepend" : "dev-master",
         "ruflin/elastica": "0.20.5.*@dev",
         "zendframework/zend-developer-tools": "dev-master"
     }
